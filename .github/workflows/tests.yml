@@ -1,0 +1,26 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Generate example data
+        run: python data/make_example_data.py --outdir data/example
+      - name: Run tests
+        run: pytest tests -q
+      - name: End-to-end run
+        run: |
+          python src/pipeline.py --counts data/example/counts.csv \
+            --metadata data/example/metadata.csv --outdir results \
+            --truth data/example/truth.csv
+          test -s results/report.html
